@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorium AR Fisika - 4 Skenario</title>
+    
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+    <button id="toggleBtn">✖ Sembunyikan Panel</button>
+
+    <div id="panel">
+        <h1>Laboratorium Fisika Kendaraan</h1>
+        
+        <select id="scenarioSelector">
+            <option value="1">1. Keluar Gerbang Tol (GLBB)</option>
+            <option value="2">2. Kamera Kecepatan (Rata-rata)</option>
+            <option value="3">3. Pengereman Darurat (Jarak Henti)</option>
+            <option value="4">4. Menyalip Kendaraan (Relatif)</option>
+        </select>
+
+        <h2 id="dataDisplay">0 km/jam</h2>
+        <p id="timerDisplay" class="info-text" style="text-align: center; font-weight: bold;">Waktu: 0.00 s</p>
+
+        <div id="ui-sc1" class="scenario-ui active highlight-box">
+            <p class="info-text" style="font-weight:bold;">Percepatan Konstan (a):</p>
+            <input type="range" min="1" max="5" value="2" step="0.5" id="accelSlider" class="slider">
+            <p class="info-text"><span id="accelValue">2.0</span> m/s²</p>
+            <canvas id="chartSc1" width="300" height="200"></canvas>
+        </div>
+
+        <div id="ui-sc2" class="scenario-ui highlight-box">
+            <p class="info-text" style="font-weight:bold;">Kecepatan Mobil:</p>
+            <input type="range" min="40" max="120" value="80" id="speedSc2Slider" class="slider">
+            <p class="info-text"><span id="speedSc2Value">80</span> km/jam</p>
+            <hr>
+            <p class="info-text">Waktu Masuk (Gate 1): <span id="t1Value">-</span> s</p>
+            <p class="info-text">Waktu Keluar (Gate 2): <span id="t2Value">-</span> s</p>
+            <p class="info-text" style="font-weight: bold; color: #2980b9;">Kecepatan Rata-rata: <span id="avgSpeedValue">-</span> km/jam</p>
+            <canvas id="chartSc2" width="300" height="200"></canvas>
+        </div>
+
+        <div id="ui-sc3" class="scenario-ui highlight-box">
+            <p class="info-text" style="font-weight:bold;">Kecepatan Awal:</p>
+            <input type="range" min="40" max="140" value="90" id="speedSc3Slider" class="slider">
+            <p class="info-text"><span id="speedSc3Value">90</span> km/jam</p>
+            <hr>
+            <p class="info-text" style="font-weight: bold; color: #c0392b;">Total Jarak Henti: <span id="stoppingDistance">-</span> m</p>
+            <canvas id="velocityChart" width="300" height="200"></canvas>
+        </div>
+
+        <div id="ui-sc4" class="scenario-ui highlight-box">
+            <p class="info-text" style="font-weight:bold; color: #c0392b;">Kecepatan Merah (Anda):</p>
+            <input type="range" min="80" max="140" value="100" id="speedRedSlider" class="slider">
+            <p class="info-text"><span id="speedRedValue">100</span> km/jam</p>
+            
+            <p class="info-text" style="font-weight:bold; color: #2980b9; margin-top:10px;">Kecepatan Biru (Depan):</p>
+            <input type="range" min="40" max="100" value="70" id="speedBlueSlider" class="slider">
+            <p class="info-text"><span id="speedBlueValue">70</span> km/jam</p>
+            <hr>
+            <p class="info-text" style="font-weight:bold;">Kecepatan Relatif: <span id="relSpeedValue">30</span> km/jam</p>
+            <canvas id="chartSc4" width="300" height="200"></canvas>
+        </div>
+
+        <button id="startBtn" class="action-btn">MULAI SIMULASI</button>
+        <button id="resetBtn" class="action-btn">RESET</button>
+        <p id="statusText" class="info-text" style="font-weight:bold; margin-top:10px;">Status: Siap</p>
+    </div>
+
+    <a-scene renderer="antialias: true" fog="type: exponential; color: #7f8c8d; density: 0.01">
+        <a-assets timeout="10000">
+            <img id="roadTexture" src="textures/asphalt.jpg">
+            <audio id="brakeSound" src="sounds/brake.mp3"></audio>
+            <a-asset-item id="carRedModel" src="models/carRed.glb"></a-asset-item>
+            <a-asset-item id="carBlueModel" src="models/carBlue.glb"></a-asset-item>
+        </a-assets>
+
+        <a-light type="ambient" intensity="0.7"></a-light>
+        <a-light type="directional" intensity="0.8" position="0 10 5"></a-light>
+        <a-sky id="envSky" src="https://cdn.aframe.io/360-image-gallery-boilerplate/img/sechelt.jpg" material="color: #7f8c8d"></a-sky>
+
+        <a-entity id="rainEffect" custom-rain></a-entity>
+
+        <a-plane position="0 -1 -5000" rotation="-90 0 0" width="20" height="10000" src="#roadTexture" repeat="5 1000"></a-plane>
+        <a-box position="-10 0 -5000" width="0.2" height="1" depth="10000" color="#95a5a6"></a-box>
+        <a-box position="10 0 -5000" width="0.2" height="1" depth="10000" color="#95a5a6"></a-box>
+        <a-plane position="-60 -1.05 -5000" rotation="-90 0 0" width="100" height="10000" color="#4d6a41"></a-plane>
+        <a-plane position="60 -1.05 -5000" rotation="-90 0 0" width="100" height="10000" color="#4d6a41"></a-plane>
+        <a-entity id="markaContainer"></a-entity>
+
+        <a-entity id="velocityVector" position="0 0.5 0" visible="false">
+            <a-cylinder color="yellow" radius="0.1" height="2" rotation="90 0 0" position="0 0 -1"></a-cylinder>
+            <a-cone color="yellow" radius-bottom="0.3" height="0.6" rotation="-90 0 0" position="0 0 -2"></a-cone>
+        </a-entity>
+
+        <a-entity id="gate1" position="0 0 -50" visible="false">
+            <a-box position="-4 2 0" width="0.5" height="4" color="white"></a-box>
+            <a-box position="4 2 0" width="0.5" height="4" color="white"></a-box>
+            <a-box position="0 4 0" width="8.5" height="0.5" color="#3498db"></a-box>
+            <a-text value="GATE 1" position="-1 4.5 0" color="black" scale="2 2 2"></a-text>
+        </a-entity>
+
+        <a-entity id="gate2" position="0 0 -150" visible="false">
+            <a-box position="-4 2 0" width="0.5" height="4" color="white"></a-box>
+            <a-box position="4 2 0" width="0.5" height="4" color="white"></a-box>
+            <a-box position="0 4 0" width="8.5" height="0.5" color="#e74c3c"></a-box>
+            <a-text value="GATE 2" position="-1 4.5 0" color="black" scale="2 2 2"></a-text>
+        </a-entity>
+
+        <a-plane id="skidMarks" position="0 -0.98 0" rotation="-90 0 0" width="1.5" height="0.1" color="#111" visible="false" opacity="0.8"></a-plane>
+
+        <a-entity id="carRed" gltf-model="#carRedModel" scale="0.7 0.7 0.7" rotation="0 180 0" position="0 -0.4 0"></a-entity>
+        <a-entity id="carBlue" gltf-model="#carBlueModel" scale="0.7 0.7 0.7" rotation="0 180 0" position="0 -0.4 -50" visible="false"></a-entity>
+
+        <a-entity id="cameraRig" position="0 2 6">
+            <a-camera></a-camera>
+        </a-entity>
+    </a-scene>
+
+    <script src="script.js"></script>
+</body>
+</html>
