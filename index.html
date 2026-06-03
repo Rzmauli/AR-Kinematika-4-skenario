@@ -32,7 +32,6 @@
             <p class="info-text" style="font-weight:bold;">Percepatan Konstan (a):</p>
             <input type="range" min="1" max="5" value="2" step="0.5" id="accelSlider" class="slider">
             <p class="info-text"><span id="accelValue">2.0</span> m/s²</p>
-            <canvas id="chartSc1" width="300" height="200"></canvas>
         </div>
 
         <div id="ui-sc2" class="scenario-ui highlight-box">
@@ -43,7 +42,6 @@
             <p class="info-text">Waktu Masuk (Gate 1): <span id="t1Value">-</span> s</p>
             <p class="info-text">Waktu Keluar (Gate 2): <span id="t2Value">-</span> s</p>
             <p class="info-text" style="font-weight: bold; color: #2980b9;">Kecepatan Rata-rata: <span id="avgSpeedValue">-</span> km/jam</p>
-            <canvas id="chartSc2" width="300" height="200"></canvas>
         </div>
 
         <div id="ui-sc3" class="scenario-ui highlight-box">
@@ -52,7 +50,6 @@
             <p class="info-text"><span id="speedSc3Value">90</span> km/jam</p>
             <hr>
             <p class="info-text" style="font-weight: bold; color: #c0392b;">Total Jarak Henti: <span id="stoppingDistance">-</span> m</p>
-            <canvas id="velocityChart" width="300" height="200"></canvas>
         </div>
 
         <div id="ui-sc4" class="scenario-ui highlight-box">
@@ -65,12 +62,13 @@
             <p class="info-text"><span id="speedBlueValue">70</span> km/jam</p>
             <hr>
             <p class="info-text" style="font-weight:bold;">Kecepatan Relatif: <span id="relSpeedValue">30</span> km/jam</p>
-            <canvas id="chartSc4" width="300" height="200"></canvas>
         </div>
 
         <button id="startBtn" class="action-btn">MULAI SIMULASI</button>
         <button id="resetBtn" class="action-btn">RESET</button>
         <p id="statusText" class="info-text" style="font-weight:bold; margin-top:10px;">Status: Siap</p>
+        
+        <canvas id="velocityChart" width="300" height="200"></canvas>
     </div>
 
     <a-scene renderer="antialias: true" fog="type: exponential; color: #7f8c8d; density: 0.01">
