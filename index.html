@@ -9,7 +9,6 @@
 
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 
 <body>
@@ -32,6 +31,7 @@
             <p class="info-text" style="font-weight:bold;">Percepatan Konstan (a):</p>
             <input type="range" min="1" max="5" value="2" step="0.5" id="accelSlider" class="slider">
             <p class="info-text"><span id="accelValue">2.0</span> m/s²</p>
+            <button id="stopSc1Btn" class="action-btn" style="background: #c0392b; color: white; margin-top: 8px;">STOP SIMULASI</button>
         </div>
 
         <div id="ui-sc2" class="scenario-ui highlight-box">
@@ -45,11 +45,17 @@
         </div>
 
         <div id="ui-sc3" class="scenario-ui highlight-box">
-            <p class="info-text" style="font-weight:bold;">Kecepatan Awal:</p>
+            <p class="info-text" style="font-weight:bold; color: #e74c3c;">Kecepatan Mobil Merah (Anda):</p>
             <input type="range" min="40" max="140" value="90" id="speedSc3Slider" class="slider">
             <p class="info-text"><span id="speedSc3Value">90</span> km/jam</p>
+            
+            <p class="info-text" style="font-weight:bold; color: #2980b9; margin-top:10px;">Kecepatan Mobil Biru (Depan):</p>
+            <input type="range" min="20" max="100" value="50" id="speedBlueSc3Slider" class="slider">
+            <p class="info-text"><span id="speedBlueSc3Value">50</span> km/jam</p>
             <hr>
-            <p class="info-text" style="font-weight: bold; color: #c0392b;">Total Jarak Henti: <span id="stoppingDistance">-</span> m</p>
+            <p class="info-text">Jarak Reaksi (1.5s): <span id="reactionDistance">-</span> m</p>
+            <p class="info-text">Jarak Pengereman Murni: <span id="brakingDistance">-</span> m</p>
+            <p class="info-text" style="font-weight: bold; color: #c0392b;">Total Jarak Henti Merah: <span id="stoppingDistance">-</span> m</p>
         </div>
 
         <div id="ui-sc4" class="scenario-ui highlight-box">
