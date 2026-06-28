@@ -63,7 +63,6 @@ function initChartForScenario(scenario) {
     if (!chartCanvas) return;
     const ctx = chartCanvas.getContext("2d");
     
-    // Jika grafik lama ada, hancurkan terlebih dahulu untuk mencegah tumpang tindih (glitch visual)
     if (simulationChart) {
         simulationChart.destroy();
     }
@@ -84,7 +83,6 @@ function initChartForScenario(scenario) {
         }
     };
 
-    // Konfigurasi dinamis sumbu Y dan garis berdasarkan nomor skenario yang aktif
     if (scenario === 1) {
         config.data.datasets = [{
             label: 'Kecepatan (km/jam)',
@@ -108,15 +106,25 @@ function initChartForScenario(scenario) {
         }];
         config.options.scales.y.title.text = 'Jarak (m)';
     } else if (scenario === 3) {
-        config.data.datasets = [{
-            label: 'Kecepatan Pengereman (km/jam)',
-            data: [],
-            borderColor: '#e74c3c',
-            backgroundColor: 'rgba(231, 76, 60, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            pointRadius: 0
-        }];
+        config.data.datasets = [
+            {
+                label: 'Kec. Mobil Merah (km/jam)',
+                data: [],
+                borderColor: '#e74c3c',
+                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0
+            },
+            {
+                label: 'Kec. Mobil Biru (km/jam)',
+                data: [],
+                borderColor: '#2980b9',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0
+            }
+        ];
         config.options.scales.y.title.text = 'Kec (km/jam)';
     } else if (scenario === 4) {
         config.data.datasets = [
@@ -150,7 +158,7 @@ if (scenarioSelector) {
         const activeUi = document.getElementById(`ui-sc${activeScenario}`);
         if (activeUi) activeUi.classList.add("active");
         
-        initChartForScenario(activeScenario); // Muat template grafik baru
+        initChartForScenario(activeScenario); 
         resetSimulation();
     });
 }
@@ -181,15 +189,32 @@ if (speedSc2Slider) {
 }
 
 const speedSc3Slider = document.getElementById("speedSc3Slider");
+const speedBlueSc3Slider = document.getElementById("speedBlueSc3Slider");
+
+function updateSc3Calculations() {
+    if (!speedSc3Slider) return;
+    let v = speedSc3Slider.value / 3.6; 
+    let d_r = v * 1.5; 
+    let d_b = (v * v) / (2 * 0.35 * 9.81); 
+    
+    const reactEl = document.getElementById("reactionDistance");
+    const brakeEl = document.getElementById("brakingDistance");
+    const stopEl = document.getElementById("stoppingDistance");
+    const valRedEl = document.getElementById("speedSc3Value");
+    
+    if (valRedEl) valRedEl.innerText = speedSc3Slider.value;
+    if (reactEl) reactEl.innerText = d_r.toFixed(1);
+    if (brakeEl) brakeEl.innerText = d_b.toFixed(1);
+    if (stopEl) stopEl.innerText = (d_r + d_b).toFixed(1);
+}
+
 if (speedSc3Slider) {
-    speedSc3Slider.oninput = (e) => {
-        let v = e.target.value / 3.6;
-        const valEl = document.getElementById("speedSc3Value");
-        if (valEl) valEl.innerText = e.target.value;
-        let d_r = v * 1.5; 
-        let d_b = (v * v) / (2 * 0.35 * 9.81); 
-        const stopDistEl = document.getElementById("stoppingDistance");
-        if (stopDistEl) stopDistEl.innerText = (d_r + d_b).toFixed(2);
+    speedSc3Slider.oninput = () => { updateSc3Calculations(); };
+}
+if (speedBlueSc3Slider) {
+    speedBlueSc3Slider.oninput = (e) => {
+        const valBlueEl = document.getElementById("speedBlueSc3Value");
+        if (valBlueEl) valBlueEl.innerText = e.target.value;
     };
 }
 
@@ -222,6 +247,17 @@ function updateRelSpeed() {
     }
 }
 
+// --- STOP BUTTON FOR SCENARIO 1 ---
+const stopSc1Btn = document.getElementById("stopSc1Btn");
+if (stopSc1Btn) {
+    stopSc1Btn.onclick = () => {
+        if (running && activeScenario === 1) {
+            running = false;
+            if (statusText) statusText.innerText = "Status: Dihentikan (Manual)";
+        }
+    };
+}
+
 // --- START SIMULATION ---
 const startBtn = document.getElementById("startBtn");
 if (startBtn) {
@@ -247,16 +283,18 @@ if (startBtn) {
             if (avgV) avgV.innerText = "-";
         } else if (activeScenario === 3) {
             const spSc3 = document.getElementById("speedSc3Slider");
-            vRed = spSc3 ? (spSc3.value / 3.6) : (50 / 3.6);
+            const spBlueSc3 = document.getElementById("speedBlueSc3Slider");
+            
+            vRed = spSc3 ? (spSc3.value / 3.6) : (90 / 3.6);
+            vBlue = spBlueSc3 ? (spBlueSc3.value / 3.6) : (50 / 3.6);
+            
             zRed = 0; 
+            zBlue = -60; 
             
-            let d_r = vRed * 1.5; 
-            let d_b = (vRed * vRed) / (2 * 0.35 * 9.81);
-            let total_ds = d_r + d_b;
-
-            zBlue = -(total_ds + 30); 
-            if (carBlue) carBlue.setAttribute("position", `0 -0.4 ${zBlue}`);
-            
+            if (carBlue) {
+                carBlue.setAttribute("position", `0 -0.4 ${zBlue}`);
+                carBlue.setAttribute("visible", "true");
+            }
         } else if (activeScenario === 4) {
             const spRed = document.getElementById("speedRedSlider");
             const spBlue = document.getElementById("speedBlueSlider");
@@ -293,11 +331,15 @@ function resetSimulation() {
     if (gate2) gate2.setAttribute("visible", activeScenario === 2 ? "true" : "false");
     if (skidMarks) skidMarks.setAttribute("visible", "false");
     
-    if ((activeScenario === 3 || activeScenario === 4) && carBlue) {
+    if (activeScenario === 3) {
+        zBlue = -60;
+        if (carBlue) carBlue.setAttribute("position", `0 -0.4 ${zBlue}`);
+        updateSc3Calculations();
+    } else if (activeScenario === 4 && carBlue) {
+        zBlue = -60;
         carBlue.setAttribute("position", `0 -0.4 ${zBlue}`);
     }
 
-    // Bersihkan data lama pada grafik tunggal saat menekan tombol reset
     if (simulationChart) {
         simulationChart.data.labels = [];
         simulationChart.data.datasets.forEach(dataset => dataset.data = []);
@@ -327,7 +369,6 @@ function animate() {
             vectorObj.setAttribute("position", `0 1.5 ${zRed}`);
         }
         
-        // Update grafik Skenario 1 (Kecepatan GLBB)
         if (simulationChart) {
             simulationChart.data.labels.push(timeElapsed.toFixed(1));
             simulationChart.data.datasets[0].data.push((vRed * 3.6).toFixed(1));
@@ -339,7 +380,6 @@ function animate() {
     else if (activeScenario === 2) {
         zRed -= vRed * dt;
         
-        // Update grafik Skenario 2 (Jarak Tempuh Kamera Kecepatan)
         if (simulationChart) {
             simulationChart.data.labels.push(timeElapsed.toFixed(1));
             simulationChart.data.datasets[0].data.push(Math.abs(zRed).toFixed(1));
@@ -364,6 +404,9 @@ function animate() {
         }
     }
     else if (activeScenario === 3) {
+        zBlue -= vBlue * dt;
+        if (carBlue) carBlue.setAttribute("position", `0 -0.4 ${zBlue}`);
+
         if (timeElapsed >= 1.5) { 
             if (!sc3_braking) {
                 sc3_braking = true;
@@ -382,19 +425,19 @@ function animate() {
         }
         zRed -= vRed * dt;
         
-        // Update grafik Skenario 3 (Dekelerasi Pengereman)
         if (simulationChart) {
             simulationChart.data.labels.push(timeElapsed.toFixed(1));
             simulationChart.data.datasets[0].data.push((vRed * 3.6).toFixed(1));
+            simulationChart.data.datasets[1].data.push((vBlue * 3.6).toFixed(1));
             simulationChart.update('none');
         }
 
-        if (zRed <= zBlue + 28) { 
-            zRed = zBlue + 28; 
+        if (zRed <= zBlue + 4) { 
+            zRed = zBlue + 4; 
             if (statusText) statusText.innerText = "Status: Tabrakan (Gagal Berhenti)!"; 
             running = false;
         } else if (vRed === 0 && sc3_braking) {
-            let jarakSisa = Math.abs(zRed - zBlue) - 28;
+            let jarakSisa = Math.abs(zRed - zBlue) - 4;
             if (statusText) statusText.innerText = `Status: Berhenti Aman (Sisa Gap: ${Math.max(0, jarakSisa).toFixed(1)} m)`; 
             running = false;
         }
@@ -403,7 +446,6 @@ function animate() {
         zRed -= vRed * dt; zBlue -= vBlue * dt;
         if (carBlue) carBlue.setAttribute("position", `0 -0.4 ${zBlue}`);
 
-        // Update grafik Skenario 4 (Dua Garis: Posisi Mobil Merah vs Mobil Biru)
         if (simulationChart) {
             simulationChart.data.labels.push(timeElapsed.toFixed(1));
             simulationChart.data.datasets[0].data.push(Math.abs(zRed).toFixed(1)); 
